@@ -12,7 +12,7 @@
 
 char LED_Color = 0x01;                       // Global Variable to determine which LED should be blinking
 
-void gpioInit()
+void gpioInit();
 
 
 int main(void)
@@ -35,10 +35,14 @@ int main(void)
 
     while(1)
     {
-        if (LEDColor)
-            P1OUT ^= BIT0;                  // P1.0 = toggle
-        else
-            P6OUT &= ~BIT6;                 // Set P1.0 to 0
+        if (LED_Color){
+            P1OUT ^= BIT0;          // P1.0 = toggle
+            P6OUT &= ~BIT6;                   // turn off p6.6
+        }
+        else{
+            P6OUT ^= BIT6;                 // Set P1.0 to 0
+            P1OUT &= ~BIT0;                   // turn off p1.0
+        }
         __delay_cycles(100000);
     }
 }
@@ -80,15 +84,18 @@ __interrupt void Port_2(void)
 {
     P2IFG &= ~BIT3;                         // Clear P1.3 IFG
 
-    if ( )       // @TODO Fill in this argument within the If statement to check if the interrupt was triggered off a rising edge.
+    if ( P2IN &  BIT3)       // @TODO Fill in this argument within the If statement to check if the interrupt was triggered off a rising edge.
     {
-        LED_Color = 0;
+        LED_Color = 0;                          // sets led to 0
+        P2IES |= BIT3;                         // P2.3 High --> Low edge
+
         // @TODO Add code to change which edge the interrupt should be looking for next
     }
 
-    else if ( ) // @TODO Fill in this argument within the If statement to check if the interrupt was triggered off a falling edge.
+    else if (!( P2IN & BIT3 )) // @TODO Fill in this argument within the If statement to check if the interrupt was triggered off a falling edge.
     {
-        LED_Color = 1;
+        LED_Color = 1;                          // sets led to 1
+        P2IES &= ~BIT3;                         // P2.3 Low --> High edge
         // @TODO Add code to change which edge the interrupt should be looking for next
     }
 }
